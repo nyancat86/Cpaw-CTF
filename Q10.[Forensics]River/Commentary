@@ -1,0 +1,55 @@
+1.)	fileコマンドを使用してファイルの情報を見ます
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$mainecoon@NyanCat-Linux ~/Gitdir/Cpaw-CTF/Q10.[Forensics]River/Files $ file river.jpg
+river.jpg: JPEG image data, JFIF standard 1.01, resolution (DPI), density 72x72, segment length 16, Exif Standard: [TIFF image data, big-endian, direntries=10, manufacturer=Sony, model=SO-01G, orientation=upper-left, xresolution=148, yresolution=156, resolutionunit=2, software=23.1.B.1.160_6_f1000010, datetime=2015:09:14 12:50:38, GPS-Data], baseline, precision 8, 3840x2160, frames 3
+
+
+
+
+2.)	fileコマンドではGPSの情報が取得できませんでした。代わりにexiftoolを使用します。
+（ない場合はインストールします）
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ exiftool river.jpg | grep GPS
+GPS Version ID                  : 2.3.0.0
+GPS Latitude Ref                : North
+GPS Longitude Ref               : East
+GPS Latitude                    : 31 deg 35' 2.76" N
+GPS Longitude                   : 130 deg 32' 51.73" E
+GPS Position                    : 31 deg 35' 2.76" N, 130 deg 32' 51.73" E
+
+
+
+3.)	位置情報が手に入りました。見る場所は[GPS Position]です。
+	それでは、このデータを使って写真がどこで撮影されたのか確認しましょう。
+	GoogleMapでは、緯度・経度を指定することで場所を特定できます。
+	https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=ja
+
+
+
+
+4.)	位置情報を直接貼り付けて検索をかけるとどうにもGoogle先生は場所をうまく指し示してくれません...
+	GoogleMapの仕様では、exiftoolで標準出力されたテキストではうまく動かないのです。
+	そこで、GoogleMapで読み込める仕様に変換してやる必要があります。
+
+>>	GoogleMapの仕様　https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=ja
+	上部の検索ボックスに座標を入力します。使用できる形式は次のとおりです。
+
+    度分秒（DMS）: 41°24'12.2"N 2°10'26.5"E
+    度分（DMM）: 41 24.2028, 2 10.4418
+    度（DD）: 41.40338, 2.17403
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ exiftool river.jpg |grep GPS |sed -e 's/deg/°/g'|sed -e 's/\" //g'|sed -e 's/ //g'| 
+GPSVersionID:2.3.0.0
+GPSLatitudeRef:North
+GPSLongitudeRef:East
+GPSLatitude:31°35'2.76N
+GPSLongitude:130°32'51.73E
+GPSPosition:31°35'2.76N,130°32'51.73E
+
+
+5.)	出力されたGPSPositionの値を使ってどこの川か調べましょう。

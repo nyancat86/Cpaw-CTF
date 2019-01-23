@@ -1,0 +1,139 @@
+1.)	問題では、実行ファイルが添付されており。出力する関数がないためなにも出てこないと前提条件につけられています。
+	まずは、ファイルの情報を取得しましょう。
+	
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ file rev100
+rev100: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=f94360edd84a940de2b74007d4289705601d618d, not stripped
+
+
+2.)	ファイルの形式は 32bitELF。すなはちバイナリ形式であることが確認できました。
+	使用しているライブラリは/lib/ld-linux.so.2です。試しに実行してみましょう
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ ./rev100
+bash: ./rev100: 許可がありません
+
+
+3.)	実行許可がありませんでした。ファイルの権限をlsコマンドで確認します。
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ ls -la
+合計 16
+drwxrwxr-x 2 nyancat nyancat 4096 May 17 14:35 .
+drwxrwxr-x 3 nyancat nyancat 4096 May 17 14:35 ..
+-rw-rw-r-- 1 nyancat nyancat 7422 May 17 14:33 rev100
+
+
+4.)	ファイルに実行権限がついていませんでした。実行できるように権限を付与してリトライします。
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ chmod 777 rev100
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ ./rev100
+bash: ./rev100: そのようなファイルやディレクトリはありません
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ sudo ./rev100
+sudo: unable to execute ./rev100: No such file or directory
+Hangup
+
+
+5.)	本当に実行ファイルかどうか怪しくなってきました。一度stringsコマンドでバイナリの読み出せる部分を見てみましょう
+
+
+
+=====実行結果=====
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q21.[Reversing]reversing easy!/Files $ strings rev100
+/lib/ld-linux.so.2
+libc.so.6
+_IO_stdin_used
+__stack_chk_fail
+putchar
+printf
+__libc_start_main
+__gmon_start__
+GLIBC_2.4
+GLIBC_2.0
+PTRh
+D$L1
+D$Fcpawf
+D$J{
+D$ y
+D$$a
+D$(k
+D$,i
+D$0n
+D$4i
+D$8k
+D$<u
+D$@!
+T$Le3
+[^_]
+;*2$"
+GCC: (Ubuntu 4.8.4-2ubuntu1~14.04) 4.8.4
+GCC: (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+.symtab
+.strtab
+.shstrtab
+.interp
+.note.ABI-tag
+.note.gnu.build-id
+.gnu.hash
+.dynsym
+.dynstr
+.gnu.version
+.gnu.version_r
+.rel.dyn
+.rel.plt
+.init
+.text
+.fini
+.rodata
+.eh_frame_hdr
+.eh_frame
+.init_array
+.fini_array
+.jcr
+.dynamic
+.got
+.got.plt
+.data
+.bss
+.comment
+crtstuff.c
+__JCR_LIST__
+deregister_tm_clones
+register_tm_clones
+__do_global_dtors_aux
+completed.6591
+__do_global_dtors_aux_fini_array_entry
+frame_dummy
+__frame_dummy_init_array_entry
+rev001.c
+__FRAME_END__
+__JCR_END__
+__init_array_end
+_DYNAMIC
+__init_array_start
+_GLOBAL_OFFSET_TABLE_
+__libc_csu_fini
+_ITM_deregisterTMCloneTable
+__x86.get_pc_thunk.bx
+data_start
+printf@@GLIBC_2.0
+_edata
+_fini
+__stack_chk_fail@@GLIBC_2.4
+__data_start
+__gmon_start__
+__dso_handle
+_IO_stdin_used
+__libc_start_main@@GLIBC_2.0
+__libc_csu_init
+putchar@@GLIBC_2.0
+_end
+_start
+_fp_hw
+__bss_start
+main
+_Jv_RegisterClasses
+__TMC_END__
+_ITM_registerTMCloneTable
+_init

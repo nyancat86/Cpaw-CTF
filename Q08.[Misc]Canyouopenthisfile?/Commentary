@@ -1,0 +1,16 @@
+1.)	まずは、どのようなファイルなのかを知る必要がある為、fileコマンドを使い情報を見る。
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ file open_me 
+open_me: CDF V2 Document, Little Endian, Os: Windows, Version 10.0, Code page: 932, Template: Normal.dotm, Last Saved By: Norval.d, Revision Number: 1, Name of Creating Application: Microsoft Office Word, Total Editing Time: 28:00, Create Time/Date: Sun Oct 11 04:27:00 2015, Last Saved Time/Date: Sun Oct 11 04:55:00 2015, Number of Pages: 1, Number of Words: 3, Number of Characters: 23, Security: 0
+
+
+2.) 	実行した結果からわかった事は。
+	・CDF V2 Document（計算可能ドキュメントファイル）である。
+	・コードページ932（日本語文字コード）を使っている。
+	・Microsoft Office Wordで作成されている。
+	つまり、Microsoft Office Word で開いてやればフラグを手に入れられる可能性がある。
+
+3.)	Microsoft Office Word で開いてみよう
+

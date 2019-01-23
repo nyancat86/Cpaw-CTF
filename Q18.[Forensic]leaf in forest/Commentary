@@ -1,0 +1,6 @@
+1.)	ファイルの中には"lovelive!と大量に書かれています"すべて置換してみましょう
+
+	nyancat@nyancat ~/Git/Cpaw-CTF/Q18.[Forensic]leaf in forest/Files $ sed -e 's/lovelive!//g' misc100 | uniq
+�ò���e!CCCelive!lovelivPPPovelive!loveAAAe!lovWWWve!{{{elive!loveliMMMelive!lovelGGG!lovelivRRRovelive!lEEElive!PPPelive!}}}
+
+

@@ -1,0 +1,178 @@
+1.)	パケット解析に必要なWiresharkをインストールする必要があります。
+nyancat Q16.[Network+Forensic]HTTPTraffic # apt-get install wireshark
+
+2.) Wiresharkでpcapファイルを読み込んでみましょう。
+
+3.) 中には、みていたサイトのパケットが転がっています。
+    ファイルに書き出してみましょう
+    [ファイル(F)] > [オブジェクトをエクスポート] > [HTTP (H)]
+    保存先を指定してSaveAllをクリックしましょう。
+
+
+4.) ファイルが出力されます。htmlがありませんね...
+怪しいnetworkファイルを見てみましょう
+
+##権限を一応自分に書き換えておきましょう
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo chown nyancat
+
+##ファイル一覧を確認します。
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ ll
+合計 420
+drwxr-xr-x 2 root    root      4096 May 16 17:08 ./
+drwxrwxr-x 3 nyancat nyancat   4096 May 16 17:08 ../
+-rw-r--r-- 1 nyancat root    127352 May 16 17:08 bootstrap.css
+-rw-r--r-- 1 nyancat root     22111 May 16 17:08 bootstrap-responsive.css
+-rw-r--r-- 1 nyancat root    150878 May 16 17:08 button2.js
+-rw-r--r-- 1 nyancat root       288 May 16 17:08 favicon(1).ico
+-rw-r--r-- 1 nyancat root       288 May 16 17:08 favicon.ico
+-rw-r--r-- 1 nyancat root     97538 May 16 17:08 image.jpg
+-rw-r--r-- 1 nyancat root       320 May 16 17:08 network100
+-rw-r--r-- 1 nyancat root      2039 May 16 17:08 network100(1)
+
+
+##まずはnetwork100を見てみます
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ cat network100
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>301 Moved Permanently</title>
+</head><body>
+<h1>Moved Permanently</h1>
+<p>The document has moved <a href="http://192.168.75.136/network100/">here</a>.</p>
+<hr>
+<address>Apache/2.4.7 (Ubuntu) Server at 192.168.75.136 Port 80</address>
+</body></html>
+
+##続いて、network(1)を見てみます
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ cat 'network100(1)'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Capture The Flag</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="takahoyo">
+    <!-- Le styles -->
+    <link href="./css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+      }
+
+      /* Custom container */
+      .container-narrow {
+        margin: 0 auto;
+        max-width: 700px;
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 60px 0;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 72px;
+        line-height: 1;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+      /* Supporting marketing content */
+      .marketing {
+        margin: 60px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+    </style>
+    <link href="./css/bootstrap-responsive.css" rel="stylesheet">
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="container-narrow">
+      <div class="masthead">
+        <h3 class="muted">Capture The Flag</h3>
+      </div>
+      <hr>
+      <div class="jumbotron">
+        <h1>Capture The Flag</h1>
+        <p class="lead">フラグが欲しかったら下のボタンを押すんだ！！</p>
+        <p><img id="image1" class="img-rounded" id="image1" src="./img/image.jpg"/></p>
+        <p><a class="btn btn-large btn-success" onclick="OnButtonClick();">ボタン</a></p>
+      </div>
+      <hr>
+      <div class="footer">
+        <p>© 2015 takahoyo</p>
+      </div>
+    </div>
+    <script src="./js/button2.js"></script>
+</body>
+</html>
+
+##ここで、おそらくnetwork100(1)がhtmlウェブページの本題部分ではないかと推測がつくはずです。
+
+
+5.)network100(1)をリネームし、index.htmlに書き換えましょう
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo cp 'network100(1)' index.html
+
+この時点で、htmlファイルを開くとウェブページは表示されるものの。フラグ獲得領域は表示されません。
+
+
+
+6.フラグを表示するにはjavaスクリプトを動作させる必要があります。
+ウェブページのソースを見てください
+
+      <div class="jumbotron">
+        <h1>Capture The Flag</h1>
+        <p class="lead">フラグが欲しかったら下のボタンを押すんだ！！</p>
+        <p><img id="image1" class="img-rounded" id="image1" src="./img/image.jpg"/></p>
+        <p><a class="btn btn-large btn-success" onclick="OnButtonClick();">ボタン</a></p>
+      </div>
+      <hr>
+      <div class="footer">
+        <p>© 2015 takahoyo</p>
+      </div>
+    </div>
+    <script src="./js/button2.js"></script>
+
+    スクリプトは./js/button2.jsですね。
+    いまのディレクトリ状態を見てみましょう
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ ll
+合計 424
+drwxr-xr-x 2 root    root      4096 May 16 17:20 ./
+drwxrwxr-x 3 nyancat nyancat   4096 May 16 17:08 ../
+-rw-r--r-- 1 nyancat root    127352 May 16 17:08 bootstrap.css
+-rw-r--r-- 1 nyancat root     22111 May 16 17:08 bootstrap-responsive.css
+-rw-r--r-- 1 nyancat root    150878 May 16 17:08 button2.js
+-rw-r--r-- 1 nyancat root       288 May 16 17:08 favicon(1).ico
+-rw-r--r-- 1 nyancat root       288 May 16 17:08 favicon.ico
+-rw-r--r-- 1 nyancat root     97538 May 16 17:08 image.jpg
+-rw-r--r-- 1 root    root      2039 May 16 17:20 index.html
+-rw-r--r-- 1 nyancat root       320 May 16 17:08 network100
+-rw-r--r-- 1 nyancat root      2039 May 16 17:08 network100(1)
+
+    エンジニアならすぐにわかりますね。
+        
+        ・現在、image.jpgは直下に配置されています。
+        ・現在、button2.jsは直下に配置されています。
+    
+    それでは、そのファイルを各ディレクトリにいれて再度htmlファイルを開いてみましょう。
+
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo mkdir js
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo cp button2.js ./js/
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo mkdir img
+nyancat@nyancat ~/Git/Cpaw-CTF/Q16.[Network+Forensic]HTTPTraffic/Files/Packet $ sudo cp image.jpg ./img
+
+さて、閲覧できるでしょうか...
+

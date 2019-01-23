@@ -1,0 +1,66 @@
+1.)	Wiresharkで閲覧できるpcapファイルが添付されています。開いてみましょう。
+	中にはftpの平文通信が入っています。中からIDとパスワードを抜き出しましょう。
+
+
+2.)	情報を獲得したら接続してみましょう。
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q28.[Network] Can you login？/Files $ ftp 157.7.52.186
+Connected to 157.7.52.186.
+220 Welcome to Cpaw CTF FTP service.
+Name (157.7.52.186:nyancat): cpaw_user
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+
+
+3.)	めでたくログインできました。ディレクトリの中を見ましょう。
+
+=====実行結果=====
+
+ftp> ls
+200 PORT command successful. Consider using PASV.
+425 Failed to establish connection.
+
+
+4.)	どうやらPASV...パッシブモードを使えと書かれています
+	指示されたとおり設定して見てみましょう
+
+=====実行結果=====
+ftp> passiv
+Passive mode on.
+ftp> ls
+227 Entering Passive Mode (157,7,52,186,234,104)
+150 Here comes the directory listing.
+-rw-r--r--    1 ftp      ftp            36 Sep 01  2017 dummy
+226 Directory send OK.
+ftp>
+
+
+5.)	なにやらファイルがありますね。ダウンロードしてみましょう。
+
+=====実行結果=====
+
+ftp> recv dummy
+local: dummy remote: dummy
+227 Entering Passive Mode (157,7,52,186,234,109)
+150 Opening BINARY mode data connection for dummy (36 bytes).
+226 Transfer complete.
+36 bytes received in 0.00 secs (228.2874 kB/s)
+ftp>quit
+
+
+
+6.)	落としたファイルを確認してみましょう
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q28.[Network] Can you login？/Files $ cat dummy
+FLAG file exists in this directory.
+
+
+
+7.)	なんだ...フラグじゃないのか...
+	ただ、このディレクトリにFLAGが存在していると書いてあるので、再度ftpで攻撃してみましょう。
+

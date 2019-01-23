@@ -1,0 +1,42 @@
+1.)	この問題は、miscファイルを分析し、どのようなファイルかを推測して変換させる問題です。
+
+
+2.)	まず、ファイルを展開します。ディレクトリを作成してそこにファイルを展開します。
+
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q19.[Misc]Image!/Files $ mkdir unzipdata
+nyancat@nyancat ~/Git/Cpaw-CTF/Q19.[Misc]Image!/Files $ unzip misc100.zip -d ./unzipdata
+
+
+## ファイルの形式が書かれていると推測されるmimetypeファイルをチェックします/
+
+
+=====実行結果=====
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q19.[Misc]Image!/Files/unzipdata $ cat mimetype | more
+application/vnd.oasis.opendocument.graphics
+
+
+## ファイルはopendocument.graphicsとなっています。よって、これはjpegやpngなどの画像ファイル形式のイメージではないことがわかります。
+## opendocumentについてはこちら
+## https://ja.wikipedia.org/wiki/OpenDocument#%E6%8B%A1%E5%BC%B5%E5%AD%90
+
+## このファイルはodgファイル形式であることもわかりました。
+## ファイルのついて調べるとこのようなことが書かれている記事がありました。
+## http://d.hatena.ne.jp/kskmeuk/20170627/1498549844
+
+
+
+
+
+3.)	試しにzipファイルごと変換サービスへ投げてみましょう。
+https://www.conv2pdf.com/
+
+
+
+
+
+
+4.)心配があれば一度スキャンを実行してみてください。
+https://www.virustotal.com/ja/

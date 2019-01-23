@@ -1,0 +1,325 @@
+1.) ファイルを確認する
+nyancat@nyancat ~ $ file rev200 
+rev200: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=e87140105d6b5c8ea9b0193380ab3b79bfdcd85b, not stripped
+
+
+2.)権限を確認する
+nyancat@nyancat ~ $ ls -la rev200 
+-rw-rw-r-- 1 nyancat nyancat 7297  5月 16 11:52 rev200
+
+
+
+3.)実行権限をつけてやる
+nyancat@nyancat ~ $ chmod 777 rev200 | ls -la rev200 
+-rwxrwxrwx 1 nyancat nyancat 7297  5月 16 11:52 rev200
+
+
+4.) 試しに実行してみる
+nyancat@nyancat ~ $ ./rev200 
+bash: ./rev200: そのようなファイルやディレクトリはありません
+
+
+5.)32Bit LSBだったのでi386のライブラリを持ってくる
+nyancat@nyancat ~ $ sudo apt-get install libc6-dev-i386
+
+
+6.)再度実行してみるが、なにも応答はなくなる。しかし、実行結果は0(正常終了)を返している。
+nyancat@nyancat ~ $ ./rev200 
+nyancat@nyancat ~ $ ./rev200 | echo $?
+0
+
+
+
+7.)gdbでメインプロセスをダンプしてみる
+nyancat@nyancat ~ $ gdb ./rev200 
+GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rev200...(no debugging symbols found)...done.
+(gdb) disas main
+Dump of assembler code for function main:
+   0x080483ed <+0>:	push   %ebp
+   0x080483ee <+1>:	mov    %esp,%ebp
+   0x080483f0 <+3>:	push   %edi
+   0x080483f1 <+4>:	push   %ebx
+   0x080483f2 <+5>:	add    $0xffffff80,%esp
+   0x080483f5 <+8>:	movl   $0x7a,-0x78(%ebp)
+   0x080483fc <+15>:	movl   $0x69,-0x74(%ebp)
+   0x08048403 <+22>:	movl   $0x78,-0x70(%ebp)
+   0x0804840a <+29>:	movl   $0x6e,-0x6c(%ebp)
+   0x08048411 <+36>:	movl   $0x62,-0x68(%ebp)
+   0x08048418 <+43>:	movl   $0x6f,-0x64(%ebp)
+   0x0804841f <+50>:	movl   $0x7c,-0x60(%ebp)
+   0x08048426 <+57>:	movl   $0x6b,-0x5c(%ebp)
+   0x0804842d <+64>:	movl   $0x77,-0x58(%ebp)
+   0x08048434 <+71>:	movl   $0x78,-0x54(%ebp)
+   0x0804843b <+78>:	movl   $0x74,-0x50(%ebp)
+   0x08048442 <+85>:	movl   $0x38,-0x4c(%ebp)
+   0x08048449 <+92>:	movl   $0x38,-0x48(%ebp)
+   0x08048450 <+99>:	movl   $0x64,-0x44(%ebp)
+   0x08048457 <+106>:	movl   $0x19,-0x7c(%ebp)
+   0x0804845e <+113>:	lea    -0x40(%ebp),%ebx
+   0x08048461 <+116>:	mov    $0x0,%eax
+   0x08048466 <+121>:	mov    $0xe,%edx
+   0x0804846b <+126>:	mov    %ebx,%edi
+   0x0804846d <+128>:	mov    %edx,%ecx
+   0x0804846f <+130>:	rep stos %eax,%es:(%edi)
+   0x08048471 <+132>:	movl   $0x0,-0x80(%ebp)
+   0x08048478 <+139>:	jmp    0x8048491 <main+164>
+   0x0804847a <+141>:	mov    -0x80(%ebp),%eax
+   0x0804847d <+144>:	mov    -0x78(%ebp,%eax,4),%eax
+   0x08048481 <+148>:	xor    -0x7c(%ebp),%eax
+   0x08048484 <+151>:	mov    %eax,%edx
+   0x08048486 <+153>:	mov    -0x80(%ebp),%eax
+   0x08048489 <+156>:	mov    %edx,-0x40(%ebp,%eax,4)
+   0x0804848d <+160>:	addl   $0x1,-0x80(%ebp)
+   0x08048491 <+164>:	cmpl   $0xd,-0x80(%ebp)
+   0x08048495 <+168>:	jle    0x804847a <main+141>
+   0x08048497 <+170>:	mov    $0x0,%eax
+   0x0804849c <+175>:	sub    $0xffffff80,%esp
+   0x0804849f <+178>:	pop    %ebx
+   0x080484a0 <+179>:	pop    %edi
+   0x080484a1 <+180>:	pop    %ebp
+   0x080484a2 <+181>:	ret    
+End of assembler dump.
+
+
+
+
+7.) データを書き込んでいるmovl部分に注目する。この次の処理でブレークポイントを作る
+   0x080483f5 <+8>:     movl   $0x7a,-0x78(%ebp)
+   0x080483fc <+15>:    movl   $0x69,-0x74(%ebp)
+   0x08048403 <+22>:    movl   $0x78,-0x70(%ebp)
+   0x0804840a <+29>:    movl   $0x6e,-0x6c(%ebp)
+   0x08048411 <+36>:    movl   $0x62,-0x68(%ebp)
+   0x08048418 <+43>:    movl   $0x6f,-0x64(%ebp)
+   0x0804841f <+50>:    movl   $0x7c,-0x60(%ebp)
+   0x08048426 <+57>:    movl   $0x6b,-0x5c(%ebp)
+   0x0804842d <+64>:    movl   $0x77,-0x58(%ebp)
+   0x08048434 <+71>:    movl   $0x78,-0x54(%ebp)
+   0x0804843b <+78>:    movl   $0x74,-0x50(%ebp)
+   0x08048442 <+85>:    movl   $0x38,-0x4c(%ebp)
+   0x08048449 <+92>:    movl   $0x38,-0x48(%ebp)
+   0x08048450 <+99>:    movl   $0x64,-0x44(%ebp)
+   0x08048457 <+106>:   movl   $0x19,-0x7c(%ebp)
+
+
+8.)ブレークポイントを作成して、run ではしらせてみる
+
+(gdb) b *0x0804845e
+Breakpoint 1 at 0x804845e
+(gdb) c
+The program is not being run.
+(gdb) run
+Starting program: /home/nyancat/rev200 
+
+Breakpoint 1, 0x0804845e in main ()
+
+
+
+
+9.)停止させずにレジスタの中を見ると、ebpは0xffffd0c8であることがわかる。(おそらく実行ごとに変わる）
+(gdb) info registers
+eax            0xf7fb6dbc	-134517316
+ecx            0x162032	1450034
+edx            0xffffd0f4	-12044
+ebx            0x0	0
+esp            0xffffd040	0xffffd040
+ebp            0xffffd0c8	0xffffd0c8
+esi            0xf7fb5000	-134524928
+edi            0xf7fb5000	-134524928
+eip            0x804845e	0x804845e <main+113>
+eflags         0x283	[ CF SF IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x63	99
+
+
+10.)xコマンドで中のデータを見る
+アドレスの-0x80の指定は指定アドレスから0x80手前のアドレスを指す
+
+当然、フラグはない。
+
+(gdb) x/32hs 0xffffd0c8-0x80
+0xffffd048:	u"à"
+0xffffd04c:	u"\031"
+0xffffd050:	u"z"
+0xffffd054:	u"i"
+0xffffd058:	u"x"
+0xffffd05c:	u"n"
+0xffffd060:	u"b"
+0xffffd064:	u"o"
+0xffffd068:	u"|"
+0xffffd06c:	u"k"
+0xffffd070:	u"w"
+0xffffd074:	u"x"
+0xffffd078:	u"t"
+0xffffd07c:	u"8"
+0xffffd080:	u"8"
+0xffffd084:	u"d"
+0xffffd088:	u"㉄芝ࠄ\001"
+0xffffd094:	u""
+0xffffd096:	u""
+0xffffd098:	u"ꀀࠄ蔂ࠄ\001"
+0xffffd0a4:	u"텤\xffff텬\xffff㧫叜臬ࠄ蒻ࠄ"
+0xffffd0be:	u""
+0xffffd0c0:	u""
+0xffffd0c2:	u""
+0xffffd0c4:	u"倀"
+0xffffd0ca:	u""
+0xffffd0cc:	u"혷\001"
+0xffffd0d4:	u"텤\xffff텬\xffff"
+0xffffd0de:	u""
+0xffffd0e0:	u""
+0xffffd0e2:	u""
+0xffffd0e4:	u""
+
+
+
+
+11.もう一度メインの逆アセンブル結果を表示する
+この次の<main+139>の処理でjmp命令が出ていることを確認する。
+その移動先は<main+164>の命令でありcmpl(比較命令)が動作する。
+
+(gdb) disas main
+Dump of assembler code for function main:
+   0x080483ed <+0>:	push   %ebp
+   0x080483ee <+1>:	mov    %esp,%ebp
+   0x080483f0 <+3>:	push   %edi
+   0x080483f1 <+4>:	push   %ebx
+   0x080483f2 <+5>:	add    $0xffffff80,%esp
+   0x080483f5 <+8>:	movl   $0x7a,-0x78(%ebp)
+   0x080483fc <+15>:	movl   $0x69,-0x74(%ebp)
+   0x08048403 <+22>:	movl   $0x78,-0x70(%ebp)
+   0x0804840a <+29>:	movl   $0x6e,-0x6c(%ebp)
+   0x08048411 <+36>:	movl   $0x62,-0x68(%ebp)
+   0x08048418 <+43>:	movl   $0x6f,-0x64(%ebp)
+   0x0804841f <+50>:	movl   $0x7c,-0x60(%ebp)
+   0x08048426 <+57>:	movl   $0x6b,-0x5c(%ebp)
+   0x0804842d <+64>:	movl   $0x77,-0x58(%ebp)
+   0x08048434 <+71>:	movl   $0x78,-0x54(%ebp)
+   0x0804843b <+78>:	movl   $0x74,-0x50(%ebp)
+   0x08048442 <+85>:	movl   $0x38,-0x4c(%ebp)
+   0x08048449 <+92>:	movl   $0x38,-0x48(%ebp)
+   0x08048450 <+99>:	movl   $0x64,-0x44(%ebp)
+   0x08048457 <+106>:	movl   $0x19,-0x7c(%ebp)
+=> 0x0804845e <+113>:	lea    -0x40(%ebp),%ebx
+   0x08048461 <+116>:	mov    $0x0,%eax
+   0x08048466 <+121>:	mov    $0xe,%edx
+   0x0804846b <+126>:	mov    %ebx,%edi
+   0x0804846d <+128>:	mov    %edx,%ecx
+   0x0804846f <+130>:	rep stos %eax,%es:(%edi)
+   0x08048471 <+132>:	movl   $0x0,-0x80(%ebp)
+   0x08048478 <+139>:	jmp    0x8048491 <main+164>
+   0x0804847a <+141>:	mov    -0x80(%ebp),%eax
+   0x0804847d <+144>:	mov    -0x78(%ebp,%eax,4),%eax
+   0x08048481 <+148>:	xor    -0x7c(%ebp),%eax
+   0x08048484 <+151>:	mov    %eax,%edx
+   0x08048486 <+153>:	mov    -0x80(%ebp),%eax
+   0x08048489 <+156>:	mov    %edx,-0x40(%ebp,%eax,4)
+   0x0804848d <+160>:	addl   $0x1,-0x80(%ebp)
+   0x08048491 <+164>:	cmpl   $0xd,-0x80(%ebp)
+   0x08048495 <+168>:	jle    0x804847a <main+141>
+   0x08048497 <+170>:	mov    $0x0,%eax
+   0x0804849c <+175>:	sub    $0xffffff80,%esp
+   0x0804849f <+178>:	pop    %ebx
+   0x080484a0 <+179>:	pop    %edi
+   0x080484a1 <+180>:	pop    %ebp
+   0x080484a2 <+181>:	ret    
+End of assembler dump.
+
+
+
+
+12.)比較命令(main+164)は   
+0x08048491 <+164>:   cmpl   $0xd,-0x80(%ebp)
+ebp-0x80のアドレスの値から0xd(14:16進数0-Dまでは14の値があるため)と比較する。
+
+比較後main+168のjle(分岐命令Jump if less or equal等しいかそれ以下)でmain+141へ命令が飛ぶ。
+0x08048495 <+168>:   jle    0x804847a <main+141>
+
+main+141から160まで命令が流れるが、気がつくべきところが一点
+main+160ではaddl(加算命令)で0x1(1)をebp-0x80に行っていることがわかる。
+よって、この命令はループ命令となり。そのループ回数は0xd(14)回であることがわかる。
+0x0804848d <+160>:   addl   $0x1,-0x80(%ebp)
+
+
+その命令の次でデータを移動させる命令になる。ここでブレイクポイントを仕掛ける。
+(gdb) b *0x08048497
+Breakpoint 2 at 0x8048497
+(gdb) c
+Continuing.
+Breakpoint 2, 0x08048497 in main ()
+
+
+レジスタの情報を調べる
+(gdb) info registers
+eax            0xd	13
+ecx            0x0	0
+edx            0x7d	125
+ebx            0xffffd088	-12152
+esp            0xffffd040	0xffffd040
+ebp            0xffffd0c8	0xffffd0c8
+esi            0xf7fb5000	-134524928
+edi            0xffffd0c0	-12096
+eip            0x8048497	0x8048497 <main+170>
+eflags         0x202	[ IF ]
+cs             0x23	35
+ss             0x2b	43
+ds             0x2b	43
+es             0x2b	43
+fs             0x0	0
+gs             0x63	99
+
+
+
+
+
+
+(gdb) x/32hs 0xffffd0c8-0x40
+0xffffd088:	u"c"
+0xffffd08c:	u"p"
+0xffffd090:	u"a"
+0xffffd094:	u"w"
+0xffffd098:	u"{"
+0xffffd09c:	u"v"
+0xffffd0a0:	u"e"
+0xffffd0a4:	u"r"
+0xffffd0a8:	u"n"
+0xffffd0ac:	u"a"
+0xffffd0b0:	u"m"
+0xffffd0b4:	u"!"
+0xffffd0b8:	u"!"
+0xffffd0bc:	u"}"
+0xffffd0c0:	u""
+0xffffd0c2:	u""
+0xffffd0c4:	u"倀"
+0xffffd0ca:	u""
+0xffffd0cc:	u"혷\001"
+0xffffd0d4:	u"텤\xffff텬\xffff"
+0xffffd0de:	u""
+0xffffd0e0:	u""
+0xffffd0e2:	u""
+0xffffd0e4:	u""
+0xffffd0e6:	u""
+0xffffd0e8:	u"倀\xdc04퀀"
+0xffffd0f6:	u""
+0xffffd0f8:	u"倀倀"
+0xffffd102:	u""
+0xffffd104:	u"萎䊕쨞纟"
+0xffffd10e:	u""
+0xffffd110:	u""

@@ -1,0 +1,61 @@
+1.)	この問題では、実行ファイルの拡張子がない状態のただのファイルが置かれている状態です。
+	まずは、このファイルがどのようなもので作成されているのか確認する必要があります。
+
+2.)	ファイルの情報を確認する時は、fileコマンドを使用します。
+	
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ file exec_me 
+exec_me: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.24, not stripped	
+
+
+3.)	このファイルの情報を見てわかった事は
+	・64bitアーキテクチャで動作する
+	・ELF（バイナリファイル）
+	・GNU/Linux 向け
+	であるという事です。もし32bitのマシンを使用している場合は動作しない可能性があります。
+
+4.)	Linuxでこのファイルを実行してみます。実行するにはそのファイル名の前に”./”をつけます
+
+
+=========実行結果===========		
+[mainecoon@SECCON-Computing Files]$ ./exec_me
+-bash: ./exec_me: 許可がありません
+
+
+5.)	実行できませんでした。このとき、見ておきたいのは、”-bash: ./exec_me: 許可がありません”です。
+	exec_meのアクセス権限を見てみましょう。
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ ls -la
+合計 20
+drwxrwxr-x 2 mainecoon mainecoon 4096  5月  8 06:27 2018 .
+drwxrwxr-x 3 mainecoon mainecoon 4096  5月  8 06:40 2018 ..
+-rw-r--r-- 1 mainecoon mainecoon 8556  5月  8 06:27 2018 exec_me
+
+	このようになっています。なんと、exec_meには実行権限が付与されていませんでした。
+
+
+
+6.)	ファイルを実行可能にするために権限の変更を行います。
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ chmod 777 exec_me 
+
+
+
+7.)	権限が付与されていることを確認しておきます。
+
+
+=========実行結果===========
+[mainecoon@SECCON-Computing Files]$ ls -la  
+合計 20
+drwxrwxr-x 2 mainecoon mainecoon 4096  5月  8 06:27 2018 .
+drwxrwxr-x 3 mainecoon mainecoon 4096  5月  8 06:40 2018 ..
+-rwxrwxrwx 1 mainecoon mainecoon 8556  5月  8 06:27 2018 exec_me
+
+
+7.)	再び、ファイルを実行させてみましょう。解答は実行してからのお楽しみ。
+[mainecoon@SECCON-Computing Files]$ ./exec_me 

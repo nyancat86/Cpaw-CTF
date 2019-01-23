@@ -1,0 +1,70 @@
+1.)	ファイルの拡張子から、C言語で書かれたプログラムであることがわかります。
+	ファイルの中身を見てみましょう
+
+=====実行結果=====
+nyancat@nyancat ~/Git/Cpaw-CTF/Q20.[Crypto]Block Cipher/Files $ cat crypto100.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, char* argv[]){
+  int i;
+  int j;
+  int key = atoi(argv[2]);
+  const char* flag = argv[1];
+  printf("cpaw{");
+  for(i = key - 1; i <= strlen(flag); i+=key) for(j = i; j>= i - key + 1; j--) printf("%c", flag[j]);
+  printf("}");
+  return 0;
+}	
+
+
+
+2.)	ファイルは、ソースコードのままでした。これをコンパイルしましょう。
+	コンパイルすると、a.outというファイルが生成されます。これがバイナリファイルです。
+=====実行結果=====
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q20.[Crypto]Block Cipher/Files $ gcc crypto100.c
+nyancat@nyancat ~/Git/Cpaw-CTF/Q20.[Crypto]Block Cipher/Files $ ls
+a.out  crypto100.c
+
+
+
+
+3.)	試しに動作させましょう
+	エラーが出るはずです
+
+
+=====実行結果=====
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q20.[Crypto]Block Cipher/Files $ ./a.out
+Segmentation fault (コアダンプ)
+
+
+
+4.)	先ほどのコードをもう一度確認しましょう
+	この部分に注目します。
+
+int main(int argc, char* argv[]){
+  int i;
+  int j;
+  int key = atoi(argv[2]);
+  const char* flag = argv[1];
+
+データをargvに格納していることを確認できます。
+これは、仮引数の名前であり。コマンドラインからの引数を受け取っているということになります。
+更に、
+argv[1]	:	１つめの引数	:	文字列を格納している（暗号化されているフラグを入力する部分）
+argv[2]	:	２つめの引数	:	文字列を数値型int)へ変換している（おそらくここがあっていないとうまく復号化できない）
+ということが見て取れます。
+
+
+
+
+5.)	では、わかったことをもとにデータを入れてみましょう
+
+=====実行結果=====
+
+nyancat@nyancat ~/Git/Cpaw-CTF/Q20.[Crypto]Block Cipher/Files $ ./a.out ruoYced_ehpigniriks_i_llrg_stae 1
+cpaw{ruoYced_ehpigniriks_i_llrg_stae}
+...
+

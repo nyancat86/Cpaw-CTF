@@ -1,0 +1,1 @@
+SELECT * FROM palloc_home WHERE ' ' = ' ' AND ' ' = ' ' OR ' ' = ' '; SELECT SHOW TABLES;
